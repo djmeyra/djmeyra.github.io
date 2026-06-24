@@ -261,7 +261,7 @@ function genererPdfSigne(){
   y=18;
   doc.setTextColor(30,30,30);
   sf('helvetica','bold',11);tx('DJ MEYRA',mg,y);
-  sf('helvetica','normal',8.5);tx("3 rue d'Ottmarsheim \u00b7 68100 Mulhouse",mg,y+6);tx('T\u00e9l. 06.66.15.35.83 \u00b7 SIRET : 880287066',mg,y+11);
+  sf('helvetica','normal',8.5);tx("3 rue d'Ottmarsheim \u00b7 68100 Mulhouse",mg,y+6);tx('T\u00e9l. 06.66.15.35.82 \u00b7 SIRET : 880287066',mg,y+11);
   sf('helvetica','bold',15);tx('CONTRAT DE PRESTATION DJ',W/2+15,y+4,{align:'center'});
   doc.setDrawColor(30,30,30);doc.setLineWidth(0.8);ln(mg,y+15,W-mg,y+15);
   y+=24;
@@ -319,7 +319,7 @@ function genererPdfSigne(){
   doc.setTextColor(30,30,30);
   doc.setDrawColor(30,30,30);doc.setLineWidth(0.5);ln(mg,280,W-mg,280);
   sf('helvetica','normal',7.5);doc.setTextColor(130,130,130);
-  tx('DJ MEYRA \u2014 BALCI Deniz \u2014 06.66.15.35.83 \u2014 3 rue d\'Ottmarsheim, 68100 Mulhouse \u2014 SIRET : 880287066',W/2,285,{align:'center'});
+  tx('DJ MEYRA \u2014 BALCI Deniz \u2014 06.66.15.35.82 \u2014 3 rue d\'Ottmarsheim, 68100 Mulhouse \u2014 SIRET : 880287066',W/2,285,{align:'center'});
 
   // PAGE 2 : CGV
   doc.addPage();
@@ -370,7 +370,7 @@ function genererPdfSigne(){
   doc.setTextColor(30,30,30);
   doc.setDrawColor(30,30,30);doc.setLineWidth(0.5);ln(mg,280,W-mg,280);
   sf('helvetica','normal',7.5);doc.setTextColor(130,130,130);
-  tx('DJ MEYRA \u2014 BALCI Deniz \u2014 06.66.15.35.83 \u2014 3 rue d\'Ottmarsheim, 68100 Mulhouse \u2014 SIRET : 880287066',W/2,285,{align:'center'});
+  tx('DJ MEYRA \u2014 BALCI Deniz \u2014 06.66.15.35.82 \u2014 3 rue d\'Ottmarsheim, 68100 Mulhouse \u2014 SIRET : 880287066',W/2,285,{align:'center'});
 
   doc.save('Contrat_Signe_DJMeyra_'+client.replace(/\s+/g,'_')+'.pdf');
 }
