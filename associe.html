@@ -110,7 +110,7 @@ select{font-size:15px;font-weight:700;border:none;background:none;color:#1c1c1e;
 
 <!-- DEVIS -->
 <div class="page active" id="page-devis">
-  <div class="page-header"><h1>DJ Meyra</h1><p>06.66.15.35.83 — Mulhouse</p></div>
+  <div class="page-header"><h1>DJ Meyra</h1><p>06.66.15.35.82 — Mulhouse</p></div>
   <div class="card">
     <p class="stitle">Client</p>
     <div class="flabel">Nom du client</div>
@@ -550,7 +550,7 @@ function genPDF(){
   var num=genNum(),today=new Date().toLocaleDateString('fr-FR');
   doc.setFillColor(20,20,20);doc.rect(0,0,W,42,'F');
   doc.setTextColor(255,255,255);doc.setFontSize(26);doc.setFont('helvetica','bold');doc.text('DJ MEYRA',mg,20);
-  doc.setFontSize(10);doc.setFont('helvetica','normal');doc.text('06.66.15.35.83',mg,29);doc.text('Mulhouse, France',mg,36);
+  doc.setFontSize(10);doc.setFont('helvetica','normal');doc.text('06.66.15.35.82',mg,29);doc.text('Mulhouse, France',mg,36);
   doc.text('Devis n\u00b0 '+num,W-mg,20,{align:'right'});doc.text('\u00c9mis le '+today,W-mg,27,{align:'right'});
   y=52;doc.setTextColor(20,20,20);
   doc.setFontSize(12);doc.setFont('helvetica','bold');doc.text('Client',mg,y);y+=7;
@@ -584,7 +584,7 @@ function genPDF(){
   doc.text('L\'acompte confirme la r\u00e9servation. Merci pour votre confiance !',mg,y);
   doc.setFillColor(20,20,20);doc.rect(0,284,W,13,'F');
   doc.setTextColor(255,255,255);doc.setFontSize(8);
-  doc.text('DJ MEYRA \u2014 06.66.15.35.83 \u2014 Mulhouse, France',W/2,292,{align:'center'});
+  doc.text('DJ MEYRA \u2014 06.66.15.35.82 \u2014 Mulhouse, France',W/2,292,{align:'center'});
   doc.save('Devis_DJMeyra_'+nom.replace(/\s+/g,'_')+'_'+num+'.pdf');
 }
 
