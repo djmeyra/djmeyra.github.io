@@ -207,9 +207,13 @@ select{font-size:15px;font-weight:700;border:none;background:none;color:#1c1c1e;
       <span style="font-size:12px;background:#e8fbe8;color:#1a7f37;padding:5px 10px;border-radius:8px;font-weight:500">🟢 Libre</span>
       <span style="font-size:12px;background:#ffe5e5;color:#cc0000;padding:5px 10px;border-radius:8px;font-weight:500">🔴 Confirmé</span>
       <span style="font-size:12px;background:#fff8e1;color:#b8860b;padding:5px 10px;border-radius:8px;font-weight:500">🟡 En attente</span>
+      <span style="font-size:12px;background:#e8e8e8;color:#555;padding:5px 10px;border-radius:8px;font-weight:500">⚫ Bloqué</span>
     </div>
   </div>
   <div id="vue-list" style="display:none"><div id="pl-list"></div></div>
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <button class="btn-ok" style="background:#555;flex:1;margin-top:0" onclick="ouvrirBlocage()">⚫ Bloquer une date</button>
+  </div>
 </div>
 
 <!-- DEMANDES -->
@@ -224,6 +228,25 @@ select{font-size:15px;font-weight:700;border:none;background:none;color:#1c1c1e;
   <div id="dem-list"><p class="empty-note">Chargement...</p></div>
 </div>
 
+<!-- MODAL BLOCAGE -->
+<div class="overlay" id="modal-blocage">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-title">⚫ Bloquer une date</span><button class="modal-close" onclick="fermerBlocage()">✕</button></div>
+    <div class="flabel">Date *</div>
+    <input type="date" id="b-date">
+    <div class="flabel">Raison (optionnel)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px" id="b-raisons">
+      <button onclick="selRaison(this)" data-raison="Vacances" style="padding:12px;border:1.5px solid #e5e5ea;border-radius:10px;font-size:14px;cursor:pointer;background:#fff;-webkit-appearance:none">🏖️ Vacances</button>
+      <button onclick="selRaison(this)" data-raison="Repos" style="padding:12px;border:1.5px solid #e5e5ea;border-radius:10px;font-size:14px;cursor:pointer;background:#fff;-webkit-appearance:none">😴 Repos</button>
+      <button onclick="selRaison(this)" data-raison="Personnel" style="padding:12px;border:1.5px solid #e5e5ea;border-radius:10px;font-size:14px;cursor:pointer;background:#fff;-webkit-appearance:none">👤 Personnel</button>
+    </div>
+    <div class="flabel">Ou saisir une raison personnalisée</div>
+    <input type="text" id="b-raison-custom" placeholder="Ex: Mariage famille, Déplacement..." oninput="selRaisonCustom()" autocorrect="off" autocapitalize="sentences">
+    <button class="btn-ok" style="background:#555;margin-top:16px" onclick="sauvegarderBlocage()">⚫ Bloquer cette date</button>
+    <button class="btn-grey" onclick="fermerBlocage()">Annuler</button>
+  </div>
+</div>
+
 <!-- MODAL DETAIL -->
 <div class="overlay" id="modal-detail">
   <div class="modal">
@@ -235,6 +258,7 @@ select{font-size:15px;font-weight:700;border:none;background:none;color:#1c1c1e;
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 var prestations = [];
+var datesBloquees = [];
 var calDate = new Date();
 var vueActuelle = 'cal';
 var filtreDem = 'nouveau';
@@ -336,6 +360,56 @@ function choisirVille(i){
   calcDevis();
 }
 
+// BLOCAGE DATES
+var raisonBlocageSelected = '';
+function ouvrirBlocage(){
+  document.getElementById('modal-blocage').classList.add('open');
+  document.getElementById('b-date').value='';
+  raisonBlocageSelected='';
+  document.getElementById('b-raison-custom').value='';
+  document.querySelectorAll('#b-raisons button').forEach(function(b){
+    b.style.background='#fff';b.style.borderColor='#e5e5ea';b.style.color='#1c1c1e';
+  });
+}
+function fermerBlocage(){document.getElementById('modal-blocage').classList.remove('open');}
+document.getElementById('modal-blocage').addEventListener('click',function(e){if(e.target===this)fermerBlocage();});
+function selRaisonCustom(){
+  var val=document.getElementById('b-raison-custom').value.trim();
+  if(val){
+    document.querySelectorAll('#b-raisons button').forEach(function(b){
+      b.style.background='#fff';b.style.borderColor='#e5e5ea';b.style.color='#1c1c1e';
+    });
+    raisonBlocageSelected=val;
+  }
+}
+function selRaison(btn){
+  document.querySelectorAll('#b-raisons button').forEach(function(b){
+    b.style.background='#fff';b.style.borderColor='#e5e5ea';b.style.color='#1c1c1e';
+  });
+  btn.style.background='#1c1c1e';btn.style.borderColor='#1c1c1e';btn.style.color='#fff';
+  raisonBlocageSelected=btn.dataset.raison;
+  document.getElementById('b-raison-custom').value='';
+}
+function sauvegarderBlocage(){
+  var date=document.getElementById('b-date').value;
+  if(!date){alert('Veuillez choisir une date.');return;}
+  var existe=datesBloquees.find(function(b){return b.date===date;});
+  if(existe){alert('Cette date est déjà bloquée.');return;}
+  var custom=document.getElementById('b-raison-custom').value.trim();
+  var raison=custom||raisonBlocageSelected||'Personnel';
+  datesBloquees.push({date:date,raison:raison});
+  if(window._syncBlocages)window._syncBlocages(datesBloquees);
+  fermerBlocage();
+  renderPlanning();
+}
+function debloquerDate(date){
+  if(!confirm('Débloquer cette date ?'))return;
+  datesBloquees=datesBloquees.filter(function(b){return b.date!==date;});
+  if(window._syncBlocages)window._syncBlocages(datesBloquees);
+  fermerDetail();
+  renderPlanning();
+}
+
 // PLANNING
 function setVue(v){
   vueActuelle=v;
@@ -421,9 +495,19 @@ function renderPlanning(){
 function clkAvenir(el){clickJour(el.dataset.date);}
 function clickJour(ds){
   var p=prestations.find(function(x){return x&&x.date===ds&&x.statut!=='annule';});
+  var bloque=datesBloquees.find(function(b){return b.date===ds;});
   var modal=document.getElementById('modal-detail');
   var content=document.getElementById('det-content');
   var title=document.getElementById('det-titre');
+  if(bloque){
+    var dsFr=new Date(ds+'T12:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+    title.textContent='⚫ '+dsFr;
+    var emoji={Vacances:'🏖️',Repos:'😴',Personnel:'👤'}[bloque.raison]||'📌';
+    content.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid #e5e5ea;font-size:14px"><span style="font-size:22px">'+emoji+'</span><div><div style="font-size:11px;color:#8e8e93;margin-bottom:2px">Raison</div><div style="font-weight:600">'+bloque.raison+'</div></div></div>'
+      +'<button data-date="'+ds+'" onclick="debloquerDate(this.dataset.date)" style="width:100%;margin-top:14px;padding:12px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;background:#ffe5e5;color:#cc0000;-webkit-appearance:none">🗑 Débloquer cette date</button>';
+    modal.classList.add('open');
+    return;
+  }
   if(!p){
     title.textContent='📅 '+new Date(ds+'T12:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
     content.innerHTML='<div style="text-align:center;padding:20px;color:#8e8e93">🟢 Ce jour est disponible</div>';
@@ -598,7 +682,7 @@ renderPlanning();
 <!-- FIREBASE MODULE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const cfg = {
   apiKey:"AIzaSyBv_0pZASNBoVNlQ4-ztKsXwVrIN0dMQ-U",
@@ -653,6 +737,17 @@ window._updateDemande = function(key, statut) {
 window._deleteDemande = function(key) {
   remove(ref(db,'demandes/'+key));
 };
+// Sync blocages
+window._syncBlocages = function(data) { set(ref(db,'blocages'), data); };
+onValue(ref(db,'blocages'), function(snapshot) {
+  var data = snapshot.val();
+  if(data) {
+    var arr = Array.isArray(data) ? data.filter(Boolean) : Object.values(data).filter(Boolean);
+    datesBloquees = arr;
+  } else { datesBloquees = []; }
+  var page = document.getElementById('page-planning');
+  if(page && page.classList.contains('active')) renderPlanning();
+});
 </script>
 
 </body>
