@@ -797,9 +797,14 @@ function renderPlanning() {
   for(var d=1;d<=days;d++){
     var ds=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     var p=prestations.find(function(x){return x&&x.date===ds&&x.statut!=='annule';});
+    var bl=(window.datesBloquees||[]).find(function(b){return b.date===ds;});
     var isTod=today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d;
-    var cls='cal-day '+(p?(p.statut==='confirme'?'reserve':'attente'):'libre')+(isTod?' today':'');
-    html+='<div class="'+cls+'" onclick="clickJour(\''+ds+'\')">'+d+(p?'<div class="cal-dot"></div>':'')+'</div>';
+    if(bl){
+      html+='<div class="cal-day'+(isTod?' today':'')+'" data-date="'+ds+'" onclick="clkAvenir(this)" style="background:#e0e0e0;color:#666;font-weight:700">'+d+'<div class="cal-dot" style="background:#999"></div></div>';
+    } else {
+      var cls='cal-day '+(p?(p.statut==='confirme'?'reserve':'attente'):'libre')+(isTod?' today':'');
+      html+='<div class="'+cls+'" data-date="'+ds+'" onclick="clkAvenir(this)">'+d+(p?'<div class="cal-dot"></div>':'')+'</div>';
+    }
   }
   document.getElementById('cal-grid').innerHTML=html;
   var today2=new Date();today2.setHours(0,0,0,0);
@@ -1564,6 +1569,20 @@ onValue(ref(db, 'signatures'), function(snapshot) {
     var page = document.getElementById('page-planning');
     if (page && page.classList.contains('active')) renderPlanning();
   }
+});
+
+// Sync blocages Firebase
+window._syncBlocages = function(data) { set(ref(db, 'blocages'), data); };
+onValue(ref(db, 'blocages'), function(snapshot) {
+  var data = snapshot.val();
+  var arr = [];
+  if(data) {
+    arr = Array.isArray(data) ? data.filter(Boolean) : Object.values(data).filter(Boolean);
+  }
+  window.datesBloquees = arr;
+  datesBloquees = arr;
+  localStorage.setItem('djmeyra_blocages', JSON.stringify(arr));
+  if(typeof renderPlanning === 'function') renderPlanning();
 });
 </script>
 
