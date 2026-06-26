@@ -400,7 +400,7 @@ function sauvegarderBlocage(){
   var custom=document.getElementById('b-raison-custom').value.trim();
   var raison=custom||raisonBlocageSelected||'Personnel';
   window.datesBloquees.push({date:date,raison:raison});
-  if(window._syncBlocages)window._syncBlocages(window.datesBloquees);
+  document.dispatchEvent(new CustomEvent('syncBlocages',{detail:window.datesBloquees}));
   fermerBlocage();
   renderPlanning();
 }
@@ -408,7 +408,7 @@ function debloquerDate(date){
   if(!confirm('Débloquer cette date ?'))return;
   if(!window.datesBloquees)window.datesBloquees=[];
   window.datesBloquees=window.datesBloquees.filter(function(b){return b.date!==date;});
-  if(window._syncBlocages)window._syncBlocages(window.datesBloquees);
+  document.dispatchEvent(new CustomEvent('syncBlocages',{detail:window.datesBloquees}));
   fermerDetail();
   renderPlanning();
 }
@@ -440,7 +440,7 @@ function renderPlanning(){
   for(var d=1;d<=days;d++){
     var ds=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     var p=prestations.find(function(x){return x&&x.date===ds&&x.statut!=='annule';});
-    var bl=(window.datesBloquees||[]).find(function(b){return b.date===ds;});
+    var bl=((window.datesBloquees||datesBloquees)||[]).find(function(b){return b.date===ds;});
     var isTod=today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d;
     if(bl){
       html+='<div class="cal-day'+(isTod?' today':'')+'" onclick="clickJour(\''+ds+'\')" style="background:#e0e0e0;color:#666;font-weight:700">'+d+'<div class="cal-dot" style="background:#999"></div></div>';
@@ -746,7 +746,9 @@ window._deleteDemande = function(key) {
   remove(ref(db,'demandes/'+key));
 };
 // Sync blocages
-window._syncBlocages = function(data) { set(ref(db,'blocages'), data); };
+document.addEventListener('syncBlocages', function(e) {
+  set(ref(db,'blocages'), e.detail);
+});
 onValue(ref(db,'blocages'), function(snapshot) {
   var data = snapshot.val();
   var arr = [];
