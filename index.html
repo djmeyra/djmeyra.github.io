@@ -402,6 +402,17 @@ function updateDots(){
   </div>
 </div>
 
+<!-- MODAL GUIDE -->
+<div class="overlay" id="modal-guide">
+  <div class="modal" style="max-height:90vh;overflow-y:auto">
+    <div class="modal-hdr">
+      <span class="modal-title">📋 Guide & Messages</span>
+      <button class="modal-close" onclick="fermerGuide()">✕</button>
+    </div>
+    <div id="guide-content"></div>
+  </div>
+</div>
+
 <!-- MODAL BLOCAGE -->
 <div class="overlay" id="modal-blocage">
   <div class="modal">
@@ -1100,6 +1111,7 @@ function clickJour(ds){
     } else {
       html+='<button onclick="envoyerSignature('+pid+')" style="width:100%;margin-top:8px;padding:12px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;background:'+(p.signatureId?'#fff3e0':'#f3e8ff')+';color:'+(p.signatureId?'#e65100':'#7c3aed')+';-webkit-appearance:none">'+(p.signatureId?'🔗 Renvoyer le lien de signature':'✍️ Envoyer pour signature électronique')+'</button>';
     }
+    html+='<button onclick="ouvrirGuide('+pid+')" style="width:100%;margin-top:8px;padding:12px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;background:#f9f0ff;color:#6b21a8;-webkit-appearance:none">📋 Guide & Messages WhatsApp</button>';
     content.innerHTML=html;
   }
   modal.classList.add('open');
@@ -1128,6 +1140,74 @@ function envoyerSignature(idx){
   else{navigator.clipboard.writeText(url).then(function(){alert('✅ Lien de signature créé et copié !\n\nCollez-le dans WhatsApp ou Instagram :\n\n'+url);});}
   clickJour(p.date);
 }
+// GUIDE & MESSAGES WHATSAPP
+function fermerGuide(){document.getElementById('modal-guide').classList.remove('open');}
+document.getElementById('modal-guide').addEventListener('click',function(e){if(e.target===this)fermerGuide();});
+
+function copierMsg(btn){
+  var txt = btn.dataset.msg;
+  navigator.clipboard.writeText(txt).then(function(){
+    var orig = btn.textContent;
+    btn.textContent = '✅ Copié !';
+    btn.style.background = '#e8fbe8';
+    btn.style.color = '#1a7f37';
+    setTimeout(function(){ btn.textContent = orig; btn.style.background = '#f9f0ff'; btn.style.color = '#6b21a8'; }, 1500);
+  });
+}
+
+function ouvrirGuide(idx){
+  var p = prestations[idx]; if(!p) return;
+  var client = p.client || '[Prénom]';
+  var prenom = client.split(' ')[0];
+  var type = p.type || '[type]';
+  var ds = p.date ? new Date(p.date+'T12:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}) : '[date]';
+  var lieu = p.adresse ? p.ville+' — '+p.adresse : (p.ville || '[adresse]');
+  var montant = p.montant ? fmt(p.montant) : '[montant]';
+  var acompte = p.acompte ? fmt(p.acompte) : '[acompte]';
+  var solde = (p.montant && p.acompte) ? fmt(p.montant - p.acompte) : '[solde]';
+  var hdebut = p.hdebut || '[heure]';
+  var lienSig = p.signatureId ? 'djmeyra.github.io/signature?id='+p.signatureId : '[lien signature]';
+
+  var m1='Bonjour '+prenom+' ! Merci pour votre demande. Voici votre devis pour votre '+type+' du '+ds+' a '+p.ville+'. Disponible au 06.66.15.35.82 si vous avez des questions.';
+  var m2='Super '+prenom+' ! Votre soiree '+type+' du '+ds+' est bien notee. Pour finaliser, je vous envoie votre contrat a signer electroniquement. Merci de le lire attentivement avant de signer.';
+  var m3='Voici votre contrat a signer : '+lienSig+'. Vous y trouverez le recapitulatif, les CGV et le RIB pour l\'acompte. L\'acompte de '+acompte+' EUR doit etre verse sous 48h pour confirmer votre date.';
+  var m4='Bonjour '+prenom+' ! J\'ai bien recu votre signature et votre acompte de '+acompte+' EUR. Votre date du '+ds+' est officiellement reservee ! Je vous envoie le contrat signe en piece jointe. A tres bientot ! DJ Meyra';
+  var m5='Bonjour '+prenom+' ! Votre '+type+' approche, c\'est dans 7 jours ! Je serai present a '+lieu+' des '+hdebut+'. Le solde de '+solde+' EUR sera a regler le soir meme. N\'hesitez pas si vous avez des questions.';
+  var m6='Bonjour '+prenom+' ! Merci pour cette belle soiree. C\'etait un plaisir d\'animer votre '+type+'. N\'hesitez pas a me recommander et a me taguer sur Instagram @dj_meyra. A bientot !';
+  var msgs = [
+    {step:'1 - Envoi du devis',icon:'📄',msg:m1},
+    {step:'2 - Acceptation du devis',icon:'✅',msg:m2},
+    {step:'3 - Envoi du contrat',icon:'✍️',msg:m3},
+    {step:'4 - Confirmation acompte recu',icon:'💳',msg:m4},
+    {step:'5 - Rappel J-7',icon:'🗓',msg:m5},
+    {step:'6 - Remerciement apres la prestation',icon:'🙏',msg:m6}
+  ];
+
+  var container=document.createElement('div');
+  container.style.padding='4px 0';
+  msgs.forEach(function(m){
+    var div=document.createElement('div');
+    div.style.marginBottom='14px';
+    var stepDiv=document.createElement('div');
+    stepDiv.style.cssText='font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px';
+    stepDiv.textContent=m.icon+' '+m.step;
+    var msgDiv=document.createElement('div');
+    msgDiv.style.cssText='background:#f9f9f9;border-radius:10px;padding:12px;font-size:13px;line-height:1.6;color:#1c1c1e;margin-bottom:6px;white-space:pre-wrap';
+    msgDiv.textContent=m.msg;
+    var btnEl=document.createElement('button');
+    btnEl.textContent='📋 Copier ce message';
+    btnEl.setAttribute('data-msg',m.msg);
+    btnEl.onclick=function(){copierMsg(this);};
+    btnEl.style.cssText='width:100%;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:#f9f0ff;color:#6b21a8;-webkit-appearance:none';
+    div.appendChild(stepDiv);div.appendChild(msgDiv);div.appendChild(btnEl);
+    container.appendChild(div);
+  });
+  var gc=document.getElementById('guide-content');
+  gc.innerHTML='';gc.appendChild(container);
+  fermerDetail();
+  document.getElementById('modal-guide').classList.add('open');
+}
+
 function togglePaiement(idx, champ){
   var p = prestations[idx]; if(!p) return;
   p[champ] = !p[champ];
