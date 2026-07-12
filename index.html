@@ -224,7 +224,7 @@ function updateDots(){
     <p class="stitle">Type de prestation</p>
     <div class="pgrid">
       <button class="pbtn" data-base="1200" data-label="Mariage" onclick="selPresta(this)"><span class="pn">Mariage</span><span class="pp">1 200 € — 6h</span></button>
-      <button class="pbtn" data-base="800" data-label="Kina" onclick="selPresta(this)"><span class="pn">Kina</span><span class="pp">800 € — 6h</span></button>
+      <button class="pbtn" data-base="800" data-label="Henné" onclick="selPresta(this)"><span class="pn">Henné</span><span class="pp">800 € — 6h</span></button>
       <button class="pbtn" data-base="800" data-label="Fiançailles" onclick="selPresta(this)"><span class="pn">Fiançailles</span><span class="pp">800 € — 6h</span></button>
       <button class="pbtn" data-base="500" data-label="Anniversaire" onclick="selPresta(this)"><span class="pn">Anniversaire</span><span class="pp">500 € — 6h</span></button>
       <button class="pbtn" data-base="600" data-label="Autre" onclick="selPresta(this)" style="grid-column:span 2"><span class="pn">Autre</span><span class="pp">600 € — 6h</span></button>
@@ -384,7 +384,7 @@ function updateDots(){
       <div><div class="flabel" style="margin-top:0">Fin</div><input type="time" id="m-hfin" value="00:00"></div>
     </div>
     <div class="flabel">Type</div>
-    <select id="m-type"><option>Mariage</option><option>Kina</option><option>Fiançailles</option><option>Anniversaire</option><option>Autre</option></select>
+    <select id="m-type"><option>Mariage</option><option>Henné</option><option>Fiançailles</option><option>Anniversaire</option><option>Autre</option></select>
     <div class="flabel">Statut</div>
     <select id="m-statut"><option value="confirme">Confirmé</option><option value="attente">En attente</option><option value="annule">Annulé</option></select>
     <div class="ssep">📍 Lieu</div>
@@ -484,7 +484,7 @@ function goTo(p) {
 // ═══════════════════════════════════════════════════
 var dBase = 0, dLabel = '', dFrais = 0, dKm = 0, dHotel = false, dVille = '', dNum = null;
 var BAR = [{max:50,f:0,h:false},{max:100,f:100,h:false},{max:200,f:100,h:false},{max:300,f:400,h:false},{max:400,f:600,h:true},{max:600,f:800,h:true},{max:800,f:1000,h:true},{max:1000,f:1200,h:true}];
-var PRIX = {Mariage:1200,Kina:800,'Fiançailles':800,Anniversaire:500,Autre:600};
+var PRIX = {Mariage:1200,Henné:800,'Fiançailles':800,Anniversaire:500,Autre:600};
 
 function getBareme(km) {
   for (var i = 0; i < BAR.length; i++) if (km <= BAR[i].max) return BAR[i];
@@ -1289,7 +1289,7 @@ function ouvrirModal(idx,datePreset){
     document.getElementById('m-date').value=p.date||'';
     document.getElementById('m-hdebut').value=p.hdebut||'18:00';
     document.getElementById('m-hfin').value=p.hfin||'00:00';
-    document.getElementById('m-type').value=p.type||'Kina';
+    document.getElementById('m-type').value=p.type||'Henné';
     document.getElementById('m-statut').value=p.statut||'confirme';
     document.getElementById('m-ville').value=p.ville||'';
     document.getElementById('m-adresse').value=p.adresse||'';
@@ -1304,7 +1304,7 @@ function ouvrirModal(idx,datePreset){
     document.getElementById('m-date').value=datePreset||'';
     document.getElementById('m-hdebut').value='18:00';
     document.getElementById('m-hfin').value='00:00';
-    document.getElementById('m-type').value='Kina';
+    document.getElementById('m-type').value='Henné';
     document.getElementById('m-statut').value='confirme';
   }
 }
@@ -1532,7 +1532,7 @@ function devisFromDem(idx){
     document.getElementById('d-insta').value=d.insta||d.instagram||'';
     document.getElementById('d-date').value=d.date||'';
     document.getElementById('d-ville').value=d.ville||'';
-    var types={Mariage:1200,Kina:800,'Fiançailles':800,Anniversaire:500,Autre:600};
+    var types={Mariage:1200,Henné:800,'Fiançailles':800,Anniversaire:500,Autre:600};
     document.querySelectorAll('.pbtn').forEach(function(b){
       if(b.dataset.label===d.type){b.classList.add('active');dBase=types[d.type]||600;dLabel=d.type;}
     });
