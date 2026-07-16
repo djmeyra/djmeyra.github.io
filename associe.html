@@ -149,28 +149,36 @@ select{font-size:15px;font-weight:700;border:none;background:none;color:#1c1c1e;
 </style>
 
 <script>
-var PIN_CODE = '2102';
+var PIN_HASH = 'bcb1ac2aaaf1d367b9fd960eb0cee5709a3fd9d0c99a53b19795a32588353c3b';
 var pinEntry = '';
 var pinUnlocked = sessionStorage.getItem('djmeyra_pin') === '1';
-if(pinUnlocked){
-  document.getElementById('pin-screen').style.display='none';
+if(pinUnlocked){document.getElementById('pin-screen').style.display='none';}
+
+async function hashPin(pin){
+  var msgBuffer = new TextEncoder().encode(pin);
+  var hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  var hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(function(b){return b.toString(16).padStart(2,'0');}).join('');
 }
+
 function pinTap(d){
   if(pinEntry.length>=4)return;
   pinEntry+=d;
   updateDots();
   if(pinEntry.length===4){
-    if(pinEntry===PIN_CODE){
-      sessionStorage.setItem('djmeyra_pin','1');
-      document.getElementById('pin-screen').style.display='none';
-    } else {
-      document.getElementById('pin-error').textContent='Code incorrect. Réessayez.';
-      setTimeout(function(){
-        pinEntry='';
-        updateDots();
-        document.getElementById('pin-error').textContent='';
-      },800);
-    }
+    hashPin(pinEntry).then(function(hash){
+      if(hash===PIN_HASH){
+        sessionStorage.setItem('djmeyra_pin','1');
+        document.getElementById('pin-screen').style.display='none';
+      } else {
+        document.getElementById('pin-error').textContent='Code incorrect. Réessayez.';
+        setTimeout(function(){
+          pinEntry='';
+          updateDots();
+          document.getElementById('pin-error').textContent='';
+        },800);
+      }
+    });
   }
 }
 function pinDel(){
