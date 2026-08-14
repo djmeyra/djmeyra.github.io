@@ -356,7 +356,7 @@ var vueActuelle = 'cal';
 var filtreDem = 'nouveau';
 var dBase=0,dLabel='',dFrais=0,dKm=0,dHotel=false,dVille='',dNum=null;
 var BAR=[{max:50,f:0,h:false},{max:100,f:100,h:false},{max:200,f:100,h:false},{max:300,f:400,h:false},{max:400,f:600,h:true},{max:600,f:800,h:true},{max:800,f:1000,h:true},{max:1000,f:1200,h:true}];
-var PRIX={Mariage:1200,Henné:800,'Fiançailles':800,Anniversaire:500,Autre:600};
+var PRIX={Mariage:1000,Henné:800,'Fiançailles':800,Anniversaire:500,Autre:600};
 
 function fmt(n){return n.toLocaleString('fr-FR')+' €';}
 function fmtPDF(n){return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,' ');}
@@ -708,7 +708,7 @@ function devisFromDem(idx){
     document.getElementById('d-insta').value=d.instagram||'';
     document.getElementById('d-date').value=d.date||'';
     document.getElementById('d-ville').value=d.ville||'';
-    var types={Mariage:1200,Henné:800,'Fian\u00e7ailles':800,Anniversaire:500,Autre:600};
+    var types={Mariage:1000,Henné:800,'Fian\u00e7ailles':800,Anniversaire:500,Autre:600};
     document.querySelectorAll('.pbtn').forEach(function(b){if(b.dataset.label===d.type){b.classList.add('active');dBase=types[d.type]||600;dLabel=d.type;}});
     calcDevis();
   },100);
