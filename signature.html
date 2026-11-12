@@ -131,7 +131,14 @@ input:focus{border-color:#1c1c1e;background:#fff}
 <div class="success-screen" id="success-screen">
   <div class="success-icon">✅</div>
   <h2>Contrat signé avec succès !</h2>
-  <p>Merci ! Votre contrat a bien été validé.<br>Pensez à verser l'acompte sous 48h pour confirmer définitivement votre réservation.<br><br>DJ Meyra vous contactera prochainement avec votre contrat.</p>
+  <p id="s-msg">Merci ! Votre contrat a bien été validé.<br>Pensez à verser l'acompte sous 48h pour confirmer définitivement votre réservation.<br><br>DJ Meyra vous contactera prochainement avec votre contrat.</p>
+  <div class="ribbox" style="text-align:left">
+    <p style="font-weight:700;margin-bottom:8px">💳 Coordonnées bancaires</p>
+    <p>Acompte à verser : <strong id="s-acompte" style="color:#1a7f37">—</strong></p>
+    <p>Titulaire : <strong>BALCI Deniz</strong></p>
+    <p class="iban">IBAN : FR76 1470 7508 4134 1198 9477 147</p>
+  </div>
+  <p style="font-size:12px;color:#ff9500;margin-top:10px;font-weight:500">⏱ L'acompte doit être versé sous 48h, sans quoi la réservation sera automatiquement annulée.</p>
 </div>
 
 <script type="module">
@@ -172,7 +179,8 @@ if (!sigId) {
     }
     if (data.signe) {
       document.getElementById('success-screen').style.display = 'block';
-      var p2 = document.querySelector('#success-screen p');
+      document.getElementById('s-acompte').textContent = (data.acompte||0).toLocaleString('fr-FR') + ' €';
+      var p2 = document.getElementById('s-msg');
       p2.innerHTML = 'Ce contrat a déjà été signé le ' + new Date(data.signeDate).toLocaleDateString('fr-FR') + ' par ' + data.signeNom + '.';
       return;
     }
@@ -233,6 +241,7 @@ function signerContrat() {
     atob('NG40Z2d5OFh5Y09pS2k='),
     '&msg=',smsMsg].join('')).catch(function(){});
 
+    document.getElementById('s-acompte').textContent = (p.acompte||0).toLocaleString('fr-FR') + ' €';
     document.getElementById('main-content').style.display = 'none';
     document.getElementById('success-screen').style.display = 'block';
   }).catch(function() {
