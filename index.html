@@ -1228,29 +1228,28 @@ function clickJour(ds){
   }
   modal.classList.add('open');
 }
+function sigData(p){
+  return {client:p.client||'',tel:p.tel||'',type:p.type||'',date:p.date||'',hdebut:p.hdebut||'',hfin:p.hfin||'',
+    ville:p.ville||'',adresse:p.adresse||'',montant:p.montant||0,acompte:p.acompte||0,
+    signe:false,createdAt:new Date().toISOString()};
+}
+function partagerLien(url,neuf){
+  if(navigator.share){navigator.share({title:'Contrat DJ Meyra',text:'Voici le lien pour signer votre contrat',url:url}).catch(function(){});}
+  else{navigator.clipboard.writeText(url).then(function(){alert((neuf?'Lien de signature cree et copie !':'Lien copie !')+'\n\nCollez-le dans WhatsApp ou Instagram :\n\n'+url);});}
+}
 function envoyerSignature(idx){
   var p = prestations[idx]; if(!p) return;
-  if(p.signatureId){
-    var url='https://djmeyra.github.io/signature.html?id='+p.signatureId;
-    if(navigator.share){navigator.share({title:'Contrat DJ Meyra',text:'Voici le lien pour signer votre contrat',url:url});}
-    else{navigator.clipboard.writeText(url).then(function(){alert('Lien copié ! Collez-le dans WhatsApp ou Instagram :\n\n'+url);});}
-    return;
-  }
-  var sigId='sig-'+Date.now()+'-'+Math.floor(Math.random()*1000);
-  p.signatureId=sigId;
-  saveLocal();
-  if(window._syncFirebase)window._syncFirebase(prestations);
-  if(window._createSignature){
-    window._createSignature(sigId,{
-      client:p.client,tel:p.tel,type:p.type,date:p.date,hdebut:p.hdebut,hfin:p.hfin,
-      ville:p.ville,adresse:p.adresse,montant:p.montant,acompte:p.acompte,
-      signe:false,createdAt:new Date().toISOString()
-    });
-  }
-  var url='https://djmeyra.github.io/signature.html?id='+sigId;
-  if(navigator.share){navigator.share({title:'Contrat DJ Meyra',text:'Voici le lien pour signer votre contrat',url:url});}
-  else{navigator.clipboard.writeText(url).then(function(){alert('✅ Lien de signature créé et copié !\n\nCollez-le dans WhatsApp ou Instagram :\n\n'+url);});}
-  clickJour(p.date);
+  if(!window._createSignature){alert('Connexion Firebase indisponible. Rechargez la page et reessayez.');return;}
+  var neuf = !p.signatureId;
+  var sigId = p.signatureId || ('sig-'+Date.now()+'-'+Math.floor(Math.random()*1000));
+  var action = neuf ? window._createSignature(sigId,sigData(p)) : window._ensureSignature(sigId,sigData(p));
+  Promise.resolve(action).then(function(){
+    if(neuf){p.signatureId=sigId;saveLocal();if(window._syncFirebase)window._syncFirebase(prestations);}
+    partagerLien('https://djmeyra.github.io/signature.html?id='+sigId,neuf);
+    clickJour(p.date);
+  }).catch(function(e){
+    alert('Erreur : le lien n\'a pas pu etre cree ('+(e&&e.message?e.message:e)+'). Verifiez la connexion et reessayez.');
+  });
 }
 // GUIDE & MESSAGES WHATSAPP
 function fermerGuide(){document.getElementById('modal-guide').classList.remove('open');}
@@ -1852,7 +1851,7 @@ renderPlanning();
 <!-- FIREBASE MODULE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, get, set, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const cfg = {
   apiKey:"AIzaSyBv_0pZASNBoVNlQ4-ztKsXwVrIN0dMQ-U",
@@ -1918,7 +1917,15 @@ window._deleteDemande = function(key) {
 
 // Créer une signature
 window._createSignature = function(sigId, data) {
-  set(ref(db, 'signatures/' + sigId), data);
+  var clean = {};
+  Object.keys(data).forEach(function(k){ var v = data[k]; clean[k] = (v === undefined || v === null) ? '' : v; });
+  return set(ref(db, 'signatures/' + sigId), clean);
+};
+window._ensureSignature = function(sigId, data) {
+  return get(ref(db, 'signatures/' + sigId)).then(function(snap){
+    if (snap.exists()) return;
+    return window._createSignature(sigId, data);
+  });
 };
 
 // Écouter les signatures pour mettre à jour le statut dans le planning
